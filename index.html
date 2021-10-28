@@ -1,0 +1,211 @@
+<!doctype html>
+<html>
+<head>
+<title></title>
+<meta charset="UTF-8">
+<meta name="keywords" content="">
+<meta name="description" content="">
+<meta name="author" content="Ed Dickinson">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="">
+<link rel="stylesheet" type="text/css" href="css.css"/>
+<style>
+
+@font-face {  font-family: daydream;  src: url(assets/Daydream.ttf); }
+@font-face {font-family: pixelmix; src: url(assets/pixelmix.ttf);}
+@font-face {font-family: dogica; src: url(assets/dogica.otf);}
+
+h1 {font-family: daydream;}
+main {
+  font-family: monospace;
+}
+#the-grid, #readout {
+  font-family: dogica;
+}
+
+#the-grid .row {
+  margin: 0.5em 0;
+}
+#the-grid .node {
+  margin: 0.2em 0.4em;
+  cursor: pointer;
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+
+  position: relative;
+  display: inline-block;
+  box-sizing: content-box;
+}
+
+#the-grid .node.selected {
+  /* outline: 2px solid red; */
+}
+#the-grid .node.selected::after {
+  content:''; position: absolute;
+  width: calc(100% + 4px); height: calc(100% + 4px); top: -5px; left: -3px;
+  border-top: 2px solid red;
+  border-bottom: 2px solid red;
+}
+#the-grid .node.selected::before {
+  content:''; position: absolute;
+  width: calc(100% + 4px); height: calc(100% + 4px); left: -5px; top: -3px;
+  border-left: 2px solid red;
+  border-right: 2px solid red;
+}
+
+.spin_anim {animation: spin 2s 0s linear;}
+
+@keyframes spin {
+  0%,100% {transform: scaleX(1);}
+  50% {transform: scaleX(-1);}
+  /* 0%,100% {top: 0px;}
+  100% {top: 10px;} */
+}
+
+#readout {font-size: 0.8em; margin-top: 2em;}
+
+#readout > div {margin-left: 1em;}
+
+</style>
+
+</head>
+<body>
+
+<main>
+  <h1>Symbular</h1>
+  <div id="the-grid">
+
+  </div>
+  <div id="readout">
+    readout:
+    <div>
+      <div>
+        master: <span class="master">I</span>
+      </div>
+      <div>
+        volume: <span class="volume">9</span>
+      </div>
+      <div>
+        key: <span class="key-note">C</span> <span class="key-mode">maj</span>
+      </div>
+
+    </div>
+
+<button id="play-button">Play/Pause</button>
+<!-- <script src="music.js"></script> -->
+
+<input type="range" min="1" max="100" value="50" class="slider" id="slider1">
+  </div>
+</main>
+
+<script src="https://unpkg.com/tone"></script>
+
+<script>
+let tempo = 120;
+let beat_length = 500;
+let bar_length = 60 / tempo * 1000 * 4;
+</script>
+
+<!-- <script src='scripts/tone.js'></script> -->
+<!-- <script src='scripts/web-audio.js'></script> -->
+
+<script>
+
+
+
+const grid = document.querySelector('#the-grid');
+const digits = ['A', 'B', 'C', 'D', 'E', '!', '?', 'O', '0', '-',]
+const note_string = '-CDEFGABC+'
+const polyrhythm_string = '0123456789'
+const digit_string = 'QWERTYUIOP{}[]ASDFGHJKL:;|\'"`~ZXCVBNM<>?/,.1234567890-=!@£$%^&*()_+±§';
+
+const select = (target) => {
+  // if (target.hue === undefined || target.hue === 360) {
+  //   target.hue = 0;
+  // }
+  console.log(target)
+  // target.style.color = `hsl(${target.hue},75%,50%)`;
+  // target.hue += 20;
+  target.dom.classList.add('selected');
+}
+
+const Node = (dom) => {
+  let hue = 0;
+  const log = () => {
+    console.log(dom.innerHTML)
+  }
+  const click = () => {
+    synth.triggerAttackRelease(`${dom.innerHTML}3`, '8n')
+    dom.style.color = `hsl(${hue},75%,50%)`;
+    dom.classList.add('selected');
+    console.log(dom.innerHTML, hue)
+    hue += 20;
+  }
+  const start_connection = () => {
+    dom.style.color = `hsl(${hue},75%,50%)`;
+    dom.classList.add('selected');
+    console.log(dom.innerHTML, hue, event.target)
+    hue += 20;
+  }
+  // dom.addEventListener('click', start_connection)
+  return {log, dom}
+}
+
+const node_objects = [];
+
+for (y = 0; y < 10; y++) {
+  let row = document.createElement('div');
+  row.classList.add('row');
+  grid.appendChild(row);
+  for (x = 0; x < 10; x++) {
+    let node = document.createElement('span');
+    node.classList.add('node');
+    if (y < 8 && y % 2 === 1) {
+      node.innerHTML = note_string.substr(x, 1);
+    } else if (y === 0) {
+      node.innerHTML = polyrhythm_string.substr(x, 1);
+    } else {
+      node.innerHTML = digit_string.substr(Math.floor(Math.random()*digit_string.length),1);
+    }
+    // node.addEventListener('click', (()=>{select(event.target)}))
+    // node_objects.push(Node(node));
+    let node_object = Node(node);
+    node_objects.push(node_object);
+    node.addEventListener('click', (()=>{select(node_object)}))
+
+    row.appendChild(node);
+  }
+}
+
+const nodes = document.querySelectorAll('.node');
+
+// nodes[15].classList.add('spin_anim')
+
+const theGrid = (() => {
+
+})
+
+
+console.log(grid)
+
+// let spin_repeat = setInterval(()=>{
+//   // let nodes = node_objects;
+//   let random_node = nodes[Math.floor(Math.random()*nodes.length)];
+//   if (random_node.classList.contains('spin_anim')) {
+//     random_node.classList.remove('spin_anim')
+//   }
+//   // console.log(random_node)
+//   random_node.classList.add('spin_anim')
+// }, 2000);
+
+
+</script>
+
+
+</body>
+</html>
