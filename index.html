@@ -116,7 +116,7 @@ let bar_length = 60 / tempo * 1000 * 4;
 
 <script>
 
-
+let connecting = null;
 
 const grid = document.querySelector('#the-grid');
 const digits = ['A', 'B', 'C', 'D', 'E', '!', '?', 'O', '0', '-',]
@@ -129,6 +129,11 @@ const select = (target) => {
   //   target.hue = 0;
   // }
   console.log(target)
+  if (connecting === null) {
+    connecting = target
+  } else {
+    connecting.connectTo(target);
+  }
   // target.style.color = `hsl(${target.hue},75%,50%)`;
   // target.hue += 20;
   target.dom.classList.add('selected');
@@ -136,8 +141,12 @@ const select = (target) => {
 
 const Node = (dom) => {
   let hue = 0;
+  let connected_to = [];
   const log = () => {
     console.log(dom.innerHTML)
+  }
+  const connectTo = (target) => {
+    connected_to.push(target)
   }
   const click = () => {
     synth.triggerAttackRelease(`${dom.innerHTML}3`, '8n')
@@ -153,7 +162,7 @@ const Node = (dom) => {
     hue += 20;
   }
   // dom.addEventListener('click', start_connection)
-  return {log, dom}
+  return {log, dom, connectTo, connected_to}
 }
 
 const node_objects = [];
