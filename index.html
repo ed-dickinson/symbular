@@ -11,65 +11,7 @@
 <link rel="stylesheet" type="text/css" href="css.css"/>
 <style>
 
-@font-face {  font-family: daydream;  src: url(assets/Daydream.ttf); }
-@font-face {font-family: pixelmix; src: url(assets/pixelmix.ttf);}
-@font-face {font-family: dogica; src: url(assets/dogica.otf);}
 
-h1 {font-family: daydream;}
-main {
-  font-family: monospace;
-}
-#the-grid, #readout {
-  font-family: dogica;
-}
-
-#the-grid .row {
-  margin: 0.5em 0;
-}
-#the-grid .node {
-  margin: 0.2em 0.4em;
-  cursor: pointer;
-  -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none; /* Safari */
-     -khtml-user-select: none; /* Konqueror HTML */
-       -moz-user-select: none; /* Old versions of Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-            user-select: none; /* Non-prefixed version, currently
-                                  supported by Chrome, Edge, Opera and Firefox */
-
-  position: relative;
-  display: inline-block;
-  box-sizing: content-box;
-}
-
-#the-grid .node.selected {
-  /* outline: 2px solid red; */
-}
-#the-grid .node.selected::after {
-  content:''; position: absolute;
-  width: calc(100% + 4px); height: calc(100% + 4px); top: -5px; left: -3px;
-  border-top: 2px solid red;
-  border-bottom: 2px solid red;
-}
-#the-grid .node.selected::before {
-  content:''; position: absolute;
-  width: calc(100% + 4px); height: calc(100% + 4px); left: -5px; top: -3px;
-  border-left: 2px solid red;
-  border-right: 2px solid red;
-}
-
-.spin_anim {animation: spin 2s 0s linear;}
-
-@keyframes spin {
-  0%,100% {transform: scaleX(1);}
-  50% {transform: scaleX(-1);}
-  /* 0%,100% {top: 0px;}
-  100% {top: 10px;} */
-}
-
-#readout {font-size: 0.8em; margin-top: 2em;}
-
-#readout > div {margin-left: 1em;}
 
 </style>
 
@@ -139,6 +81,70 @@ const select = (target) => {
   target.dom.classList.add('selected');
 }
 
+const createDomWire = (from, to) => {
+  console.log(
+    Array.from(from.parentNode.children).indexOf(from),
+    Array.from(from.parentNode.parentNode.children).indexOf(from.parentNode),
+    ' to ',
+    Array.from(to.parentNode.children).indexOf(to),
+    Array.from(to.parentNode.parentNode.children).indexOf(to.parentNode)
+  )
+  let from_col = Array.from(from.parentNode.children).indexOf(from),
+      from_row = Array.from(from.parentNode.parentNode.children).indexOf(from.parentNode),
+      to_col = Array.from(to.parentNode.children).indexOf(to),
+      to_row = Array.from(to.parentNode.parentNode.children).indexOf(to.parentNode);
+  // console.log('from',from.parentNode.children)
+
+
+
+
+  const addWireSection = (type) => {
+    let wire_dom = document.createElement('div');
+    wire_dom.classList.add('wire');
+    wire_dom.style.backgroundColor = 'red';
+    wire_dom.style.left = x + 'px';
+    wire_dom.style.top = y + 'px';
+    // wire_dom.style.width = to.offsetLeft - from.offsetLeft - to.offsetWidth + 'px';
+    let xx = 0;
+    let yy = 0;
+    if (type === 'nub-h') {
+      xx = 4;
+      yy = 2;
+    } else if (type === 'nub-v') {
+      xx = 4;
+      yy = 2;
+    } else if (type === 'vertical') {
+      xx = 4;
+      yy = 2;
+    wire_dom.style.width = xx + 'px';
+    wire_dom.style.height = yy + 'px';
+    x += xx;
+    y += yy;
+    grid.appendChild(wire_dom)
+  }
+
+  let x = from.offsetLeft + from.offsetWidth + 2;
+  let y = from.offsetTop + (from.offsetHeight/2);
+
+  if (to_col > from_col && to_row > from_row) {
+    addWireSection('nub-h');
+    addWireSection('vertical');
+  }
+
+
+
+
+
+  // wire_dom.style.backgroundColor = `hsl(${hue},75%,50%)`;
+  // wire_dom.style.backgroundColor = 'red';
+  // wire_dom.style.left = from.offsetLeft + from.offsetWidth + 'px';
+  // wire_dom.style.top = `${from.offsetTop + ((to.offsetTop - from.offsetTop) / 2) + (to.offsetHeight / 2)}px`;
+  // wire_dom.style.width = to.offsetLeft - from.offsetLeft - to.offsetWidth + 'px';
+  // wire_dom.style.transform = 'skewY(45deg)';
+  // console.log(from.offsetLeft, from.offsetWidth)
+  // grid.appendChild(wire_dom)
+}
+
 const Node = (dom) => {
   let hue = 0;
   let connected_to = [];
@@ -146,7 +152,10 @@ const Node = (dom) => {
     console.log(dom.innerHTML)
   }
   const connectTo = (target) => {
-    connected_to.push(target)
+
+    connected_to.push(target);
+    let wire_dom = createDomWire(dom, target.dom);
+
   }
   const click = () => {
     synth.triggerAttackRelease(`${dom.innerHTML}3`, '8n')
