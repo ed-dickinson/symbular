@@ -96,40 +96,73 @@ const createDomWire = (from, to) => {
   // console.log('from',from.parentNode.children)
 
 
+  // 2 options - vertical adjacent, horizontal adjacent
+  // 2 options - same row but seperated, same col but seperated
+  // 2 options - different row but 1 col apart, different col but 1 row apart
+  // 1 option / 4 directions - row and col both 1 apart
 
+  const addWireSection = (type, direction, length) => {
+    if (x === undefined && y === undefined) {
+      switch (direction) {
+        case 'right':
+        x = from.offsetLeft + from.offsetWidth + 2;
+        y = from.offsetTop + (from.offsetHeight/2) - 1;
+        break;
+        case 'left':
+        x = from.offsetLeft;
+        y = from.offsetTop + (from.offsetHeight/2) - 1;
+        break;
+      }
+    }
 
-  const addWireSection = (type) => {
     let wire_dom = document.createElement('div');
     wire_dom.classList.add('wire');
     wire_dom.style.backgroundColor = 'red';
-    wire_dom.style.left = x + 'px';
-    wire_dom.style.top = y + 'px';
+
     // wire_dom.style.width = to.offsetLeft - from.offsetLeft - to.offsetWidth + 'px';
     let xx = 0;
     let yy = 0;
-    if (type === 'nub-h') {
-      xx = 4;
-      yy = 2;
-    } else if (type === 'nub-v') {
-      xx = 4;
+    if (type === 'nub') {
+      xx = 2;
       yy = 2;
     } else if (type === 'vertical') {
-      xx = 4;
+      xx = 2;
+      yy = length;
+    } else if (type === 'horizontal') {
+      xx = length;
       yy = 2;
     }
+    wire_dom.style.left = (direction === 'left' ? x-xx -2 : x) + 'px';
+    wire_dom.style.top = (direction === 'up' ? y-yy -2 : y) + 'px';
+
     wire_dom.style.width = xx + 'px';
     wire_dom.style.height = yy + 'px';
-    x += xx;
-    y += yy;
+    x += direction === 'left' ? -xx - 4 : xx;
+    y += direction === 'up' ? -yy - 4 : yy;
     grid.appendChild(wire_dom)
   }
 
-  let x = from.offsetLeft + from.offsetWidth + 2;
-  let y = from.offsetTop + (from.offsetHeight/2);
+  let x, y;
 
-  if (to_col > from_col && to_row > from_row) {
-    addWireSection('nub-h');
-    addWireSection('vertical');
+
+
+
+  if (to_col === from_col+1 && to_row === from_row) { //
+    addWireSection('horizontal', 'right', 6)
+  } else if (to_col === from_col-1 && to_row === from_row) { //
+    addWireSection('horizontal', 'left', 6)
+  } else if (to_col === from_col+1 && to_row !== from_row) {
+    addWireSection('nub', 'right');
+    addWireSection('vertical',
+      to_row > from_row ? 'down' : 'up',
+      to_row > from_row ? (to.offsetTop - from.offsetTop - 2) : (from.offsetTop - to.offsetTop - 2));
+    addWireSection('nub', 'right');
+  } else if (to_col === from_col-1 && to_row !== from_row) {
+    addWireSection('nub', 'left');
+    addWireSection('vertical',
+      to_row > from_row ? 'down' : 'up',
+      to_row > from_row ? (to.offsetTop - from.offsetTop - 2) : (from.offsetTop - to.offsetTop - 2));
+    addWireSection('nub', 'left');
   }
 
 
