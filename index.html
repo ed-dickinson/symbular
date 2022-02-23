@@ -112,6 +112,14 @@ const createDomWire = (from, to) => {
         x = from.offsetLeft;
         y = from.offsetTop + (from.offsetHeight/2) - 1;
         break;
+        case 'down':
+        x = from.offsetLeft + (from.offsetWidth/2) - 1;
+        y = from.offsetTop + from.offsetHeight + 2;
+        break;
+        case 'up':
+        x = from.offsetLeft + (from.offsetWidth/2) - 1;
+        y = from.offsetTop;
+        break;
       }
     }
 
@@ -144,39 +152,58 @@ const createDomWire = (from, to) => {
 
   let x, y;
 
+    // adjacent in row
+  if ((to_col === from_col+1 || to_col === from_col-1) && to_row === from_row) {
+    addWireSection('horizontal', to_col > from_col ? 'right' : 'left', 6)
 
+    // adjacent in col
+  } else if (to_col === from_col && (to_row === from_row - 1 || to_row === from_row + 1)) {
+    addWireSection('vertical', to_row < from_row ? 'up' : 'down', 6)
 
+    // adjacent columns, different rows
+  } else if ((to_col === from_col+1 || to_col === from_col-1) && to_row !== from_row) {
+    addWireSection('nub', to_col > from_col ? 'right' : 'left');
+    addWireSection('vertical',
+      to_row > from_row ? 'down' : 'up',
+      to_row > from_row ? (to.offsetTop - from.offsetTop - 2) : (from.offsetTop - to.offsetTop - 2));
+    addWireSection('nub', to_col > from_col ? 'right' : 'left');
 
-  if (to_col === from_col+1 && to_row === from_row) { //
-    addWireSection('horizontal', 'right', 6)
-  } else if (to_col === from_col-1 && to_row === from_row) { //
-    addWireSection('horizontal', 'left', 6)
-  } else if (to_col === from_col+1 && to_row !== from_row) {
+    // same column, not adjacent
+  } else if (to_col === from_col && (to_row > from_row+1 || to_row < from_row-1)) {
     addWireSection('nub', 'right');
     addWireSection('vertical',
       to_row > from_row ? 'down' : 'up',
       to_row > from_row ? (to.offsetTop - from.offsetTop - 2) : (from.offsetTop - to.offsetTop - 2));
-    addWireSection('nub', 'right');
-  } else if (to_col === from_col-1 && to_row !== from_row) {
     addWireSection('nub', 'left');
+
+    // different columns, adjacent rows
+  } else if ((to_row === from_row+1 || to_row === from_row-1) && to_col !== from_col) {
+    addWireSection('nub', to_row > from_row ? 'down' : 'up');
+    addWireSection('horizontal',
+      to_row > from_row ? 'right' : 'left',
+      to_row > from_row ? (to.offsetLeft - from.offsetLeft - 2) : (from.offsetLeft - to.offsetLeft - 2));
+    addWireSection('nub', to_col > from_col ? 'down' : 'up');
+
+    // same row, not adjacent
+  } else if (to_row === from_row && (to_col > from_col+1 || to_col < from_col-1)) {
+    addWireSection('nub', 'down');
+    addWireSection('horizontal',
+      to_col > from_col ? 'right' : 'left',
+      to_col > from_col ? (to.offsetLeft - from.offsetLeft - 2) : (from.offsetLeft - to.offsetLeft - 2));
+    addWireSection('nub', 'up');
+
+    // both non-adjacent
+  } else if ((to_col > from_col + 1 || to_col < from_col -1) && (to_row > from_row + 1 || to_row < from_row - 1)) {
+    addWireSection('nub', to_col > from_col ? 'right' : 'left');
     addWireSection('vertical',
       to_row > from_row ? 'down' : 'up',
-      to_row > from_row ? (to.offsetTop - from.offsetTop - 2) : (from.offsetTop - to.offsetTop - 2));
-    addWireSection('nub', 'left');
+      ((to_row > from_row ? to.offsetTop - from.offsetTop : from.offsetTop - to.offsetTop) - (from.offsetHeight / 2) - 5 - 2));
+      addWireSection('horizontal',
+        to_col > from_col ? 'right' : 'left',
+        ((to_col > from_col ? to.offsetLeft - from.offsetLeft : from.offsetLeft - to.offsetLeft) - (from.offsetWidth / 2) - 5 - 2));
+    addWireSection('nub', to_row > from_row ? 'down' : 'up');
   }
 
-
-
-
-
-  // wire_dom.style.backgroundColor = `hsl(${hue},75%,50%)`;
-  // wire_dom.style.backgroundColor = 'red';
-  // wire_dom.style.left = from.offsetLeft + from.offsetWidth + 'px';
-  // wire_dom.style.top = `${from.offsetTop + ((to.offsetTop - from.offsetTop) / 2) + (to.offsetHeight / 2)}px`;
-  // wire_dom.style.width = to.offsetLeft - from.offsetLeft - to.offsetWidth + 'px';
-  // wire_dom.style.transform = 'skewY(45deg)';
-  // console.log(from.offsetLeft, from.offsetWidth)
-  // grid.appendChild(wire_dom)
 }
 
 const Node = (dom) => {
