@@ -75,6 +75,7 @@ const select = (target) => {
     connecting = target
   } else {
     connecting.connectTo(target);
+    connecting = null;
   }
   // target.style.color = `hsl(${target.hue},75%,50%)`;
   // target.hue += 20;
