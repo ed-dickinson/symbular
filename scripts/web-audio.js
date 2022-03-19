@@ -20,9 +20,9 @@ var modulatorStackNode = [
     // new Modulator("square", 10*Math.random(), 200*Math.random()),
     // new Modulator("sine", 10*Math.random(), 200*Math.random())
 
-    new Modulator("sine", 1000, 100),
-    new Modulator("sine", 250, 100),
-    new Modulator("square", 100, 100),
+    new Modulator("sine", 200, 100),
+    new Modulator("sine", 2500, 100),
+    new Modulator("square", 1000, 100)
 ].reduce(function (input, output) {
    input.gain.connect(output.modulator.frequency);
     return output;
