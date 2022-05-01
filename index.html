@@ -23,6 +23,9 @@
   <div id="the-grid">
 
   </div>
+  <div id="tooltip">
+    INFO
+  </div>
   <div id="readout">
     readout:
     <div>
@@ -41,11 +44,18 @@
 <button id="play-button">Play/Pause</button>
 <!-- <script src="music.js"></script> -->
 
-<input type="range" min="1" max="100" value="50" class="slider" id="slider1">
+vol: <input type="range" min="0" max="2" step="0.01" value="1" class="slider" id="slider-vol">
+filt: <input type="range" min="50" max="500" value="50" class="slider" id="slider-filt1">
+<br />
+<input type="range" min="1" max="100" value="50" class="slider" id="slider1"><br />
+<input type="range" min="1" max="100" value="50" class="slider" id="slider2"><br />
+<input type="range" min="1" max="100" value="50" class="slider" id="slider3"><br />
+<input type="range" min="1" max="100" value="50" class="slider" id="slider4">
   </div>
 </main>
 
 <!-- <script src="https://unpkg.com/tone"></script> -->
+<!-- <script src="assets/Tone.js"></script> -->
 
 <script src="wiring.js"></script>
 
@@ -56,148 +66,13 @@ let bar_length = 60 / tempo * 1000 * 4;
 </script>
 
 <!-- <script src='scripts/tone.js'></script> -->
-<script src='scripts/web-audio.js'></script>
+<!-- <script src='scripts/web-audio.js'></script> -->
+<script src='scripts/my-web-audio.js'></script>
+<script src='scripts/grid.js'></script>
 
 <script>
 
-let connecting = null;
 
-const grid = document.querySelector('#the-grid');
-const digits = ['A', 'B', 'C', 'D', 'E', '!', '?', 'O', '0', '-',]
-const note_string = '-CDEFGABC+'
-const polyrhythm_string = '0123456789'
-const digit_string = 'QWERTYUIOP{}[]ASDFGHJKL:;|\'"`~ZXCVBNM<>?/,.1234567890-=!@£$%^&*()_+±§';
-
-const wiringChain = () => {
-  let hue = 0;
-  return () => {
-    hue += 20;
-    if (hue === 360) {
-      hue = 0;
-    }
-    console.log(hue)
-  }
-}
-
-
-let running_hue = 0;
-
-const moveHue = () => {
-  running_hue += 20;
-  if (running_hue === 360) {
-    running_hue = 0;
-  }
-}
-
-const select = (target) => {
-  if (connecting === null) {
-    if (target.hue === undefined || target.hue === 360) {
-      target.hue = running_hue;
-      moveHue();
-    }
-  } else {
-    target.hue = connecting.hue;
-  }
-
-
-  console.log(target, connecting)
-  if (connecting === null) {
-    connecting = target
-  } else {
-    if (target === connecting) {
-      return;
-    }
-    connecting.connectTo(target);
-    connecting = null;
-  }
-  target.dom.style.borderColor = `hsl(${target.hue},75%,50%)`;
-  // target.hue += 20;
-  target.dom.classList.add('selected');
-}
-
-
-const createDomWire = createDomWire_EXT;
-
-const Node = (dom) => {
-  let hue = 0;
-  let connected_to = [];
-  const log = () => {
-    console.log(dom.innerHTML)
-  }
-  const connectTo = (target) => {
-
-    connected_to.push(target);
-    let wire_dom = createDomWire(dom, target.dom, `hsl(${target.hue},75%,50%)`);
-
-  }
-  const click = () => {
-    // synth.triggerAttackRelease(`${dom.innerHTML}3`, '8n')
-    dom.style.color = `hsl(${hue},75%,50%)`;
-    dom.classList.add('selected');
-    console.log(dom.innerHTML, hue)
-    hue += 20;
-  }
-  const start_connection = () => {
-    dom.style.color = `hsl(${hue},75%,50%)`;
-    dom.classList.add('selected');
-    console.log(dom.innerHTML, hue, event.target)
-    hue += 20;
-  }
-  // dom.addEventListener('click', start_connection)
-  return {log, dom, connectTo, connected_to}
-}
-
-const node_objects = [];
-
-for (y = 0; y < 10; y++) {
-  let row = document.createElement('div');
-  row.classList.add('row');
-  grid.appendChild(row);
-  for (x = 0; x < 10; x++) {
-    let node = document.createElement('span');
-    node.classList.add('node');
-    if (y < 8 && y % 2 === 1) {
-      node.innerHTML = note_string.substr(x, 1);
-    } else if (y === 0) {
-      node.innerHTML = polyrhythm_string.substr(x, 1);
-    } else {
-      node.innerHTML = digit_string.substr(Math.floor(Math.random()*digit_string.length),1);
-    }
-    // node.addEventListener('click', (()=>{select(event.target)}))
-    // node_objects.push(Node(node));
-    let node_object = Node(node);
-    node_objects.push(node_object);
-    node.addEventListener('click', (()=>{select(node_object)}))
-
-    row.appendChild(node);
-
-    // let after = document.createElement('span');
-    // let before = document.createElement('span');
-    // after.classList.add('after');
-    // before.classList.add('before');
-    // node.appendChild(after);
-    // node.appendChild(before);
-  }
-}
-
-const nodes = document.querySelectorAll('.node');
-
-const theGrid = (() => {
-
-})
-
-
-console.log(grid)
-
-// let spin_repeat = setInterval(()=>{
-//   // let nodes = node_objects;
-//   let random_node = nodes[Math.floor(Math.random()*nodes.length)];
-//   if (random_node.classList.contains('spin_anim')) {
-//     random_node.classList.remove('spin_anim')
-//   }
-//   // console.log(random_node)
-//   random_node.classList.add('spin_anim')
-// }, 2000);
 
 
 </script>

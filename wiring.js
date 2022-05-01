@@ -91,9 +91,9 @@ const createDomWire_EXT = (from, to, colour) => {
   } else if ((to_row === from_row+1 || to_row === from_row-1) && to_col !== from_col) {
     addWireSection('nub', to_row > from_row ? 'down' : 'up');
     addWireSection('horizontal',
-      to_row > from_row ? 'right' : 'left',
-      to_row > from_row ? (to.offsetLeft - from.offsetLeft - 2) : (from.offsetLeft - to.offsetLeft - 2));
-    addWireSection('nub', to_col > from_col ? 'down' : 'up');
+      to_col > from_col ? 'right' : 'left',
+      to_col > from_col ? (to.offsetLeft - from.offsetLeft - 2) : (from.offsetLeft - to.offsetLeft - 2));
+    addWireSection('nub', to_row > from_row ? 'down' : 'up');
 
     // same row, not adjacent
   } else if (to_row === from_row && (to_col > from_col+1 || to_col < from_col-1)) {

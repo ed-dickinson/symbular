@@ -40,4 +40,12 @@ filter.Q.value = 10;
 osc.connect(filter);
 filter.connect(context.destination);
 
-osc.start(0);
+// osc.start(0);
+
+document.querySelector('#play-button').addEventListener('click', ()=>{
+  osc.start(0)
+})
+
+document.querySelector('#slider1').addEventListener('change', ()=>{
+  osc.frequency.value = 100+4*slider.value;
+})
