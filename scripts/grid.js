@@ -79,6 +79,14 @@ for (let i = 0; i < 6; i++) {
   node.description = `This is a modification multiplier: it will modify the effect of something by ${node.symbol}. (Hint: use on a sequencer node.)`
 }
 
+for (let i = 0; i < 2; i++) {
+  let node = nodes_grid[4][i]
+  node.symbol = '%‰'.substr(i, 1)
+  node.value = ['half', 'quarter'][i]
+  node.type = 'arpeggiator'
+  node.description = `An arpeggiator: it arpeggiates into ${node.value} notes.`
+}
+
 for (let i = 0; i < 6; i++) {
   let node = nodes_grid[7][i]
   node.symbol = '()[]{}'.substr(i, 1)
@@ -156,15 +164,14 @@ const select = (target) => {
       return;
     }
 
-    // this is from audio.js or timing.js
-    if (unplayed) { startAudio() }
+
 
     // connnect to other node \/\/\/
     // if target is not part of a Chain
-    if (connecting.part_of === null) {
+    if (connecting.part_of.length === 0) {
       let chain_object = Chain([connecting, target], connecting.hue)
-      target.part_of = chain_object
-      connecting.part_of = chain_object
+      target.part_of.push(chain_object)
+      connecting.part_of.push(chain_object)
       chains.push(chain_object)
 
       // if (connecting.type === 'note') {
@@ -174,18 +181,26 @@ const select = (target) => {
       // }
     } else {
       // target.part_of.push()
-      connecting.part_of.addNode(target)
-      target.part_of = connecting.part_of
+      connecting.part_of[connecting.part_of.length-1].addNode(target)
+      target.part_of.push(connecting.part_of[connecting.part_of.length-1])
 
       // if (target.type === 'note') {
       //   chain_object.notes.push(target.symbol)
       // }
     }
     printChains()
+
+
+
     // connecting.connectTo(target);
     connecting.wireTo(target);
     // target.connectTo(connecting);
     // ^^^ finish connect to other node ^^^
+
+    // this is from audio.js or timing.js
+    if (unplayed) { startAudio() }
+
+
     connecting = null;
   }
   target.dom.style.borderColor = `hsl(${target.hue},75%,50%)`;
@@ -204,9 +219,9 @@ const clearTooltip = () => {
 const hover = (target) => {
   // console.log('hover')
   tooltip_dom.innerHTML = target.description
-  if (target.part_of !== null) {
-    tooltip_dom.innerHTML += `, chain: ${target.part_of.getName()}`
-  }
+  // if (target.part_of !== null) {
+  //   tooltip_dom.innerHTML += `, chain: ${target.part_of.getName()}`
+  // }
   target.dom.addEventListener('mouseout', clearTooltip)
 }
 
@@ -214,9 +229,9 @@ const hover = (target) => {
 const createDomWire = createDomWire_EXT;
 
 const Node = (dom, description, type, value) => {
-  let hue = 0;
-  let connected_to = [];
-  let part_of = null;
+  let hue = 0
+  let connected_to = []
+  let part_of = []
   let symbol = dom.innerHTML
   // const log = () => {
   //   console.log(dom.innerHTML)

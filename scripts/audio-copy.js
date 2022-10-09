@@ -120,37 +120,31 @@ const scheduler = () => {
     let next_note = (current_note + 1) % 8
     // console.log(nodes_grid[0][next_note])
 
-
     // see if chain lies on note sequencer
-    if (nodes_grid[0][next_note].obj.part_of.length > 0) {
+    if (nodes_grid[0][next_note].obj.part_of !== null) {
+      let chain = nodes_grid[0][next_note].obj.part_of
+// console.log(chain)
+      let chain_frqs = chain.nodes.filter(x => x.type === 'note')
 
-      nodes_grid[0][next_note].obj.part_of.forEach(chain => {
-        // console.log(chain)
-        // let chain = nodes_grid[0][next_note].obj.part_of
-  // console.log(chain)
-        let chain_frqs = chain.nodes.filter(x => x.type === 'note')
+      let chain_waveforms = chain.nodes.filter(x => x.type === 'waveform')
 
-        let chain_waveforms = chain.nodes.filter(x => x.type === 'waveform')
+      console.log(chain_waveforms)
+      // if unattached to note nodes
+      if (chain_frqs.length === 0) {
+        scheduleNoise(next_note_time)
+      } else {
+        for (let i = 0; i < chain_frqs.length; i++) {
+          let note_i = nodes_grid[1].indexOf(chain_frqs[i])
 
-        console.log(chain_waveforms)
-        // if unattached to note nodes
-        if (chain_frqs.length === 0) {
-          scheduleNoise(next_note_time)
-        } else {
-          for (let i = 0; i < chain_frqs.length; i++) {
-            let note_i = nodes_grid[1].indexOf(chain_frqs[i])
-
-            if (chain_waveforms.length === 0) {
-              scheduleNote(note_frqs[chain_frqs[i].value], next_note_time, 'sine')
-            } else {
-              for (let j = 0; j < chain_waveforms.length; j++) {
-                scheduleNote(note_frqs[chain_frqs[i].value], next_note_time, chain_waveforms[j].value)
-              }
+          if (chain_waveforms.length === 0) {
+            scheduleNote(note_frqs[chain_frqs[i].value], next_note_time, 'sine')
+          } else {
+            for (let j = 0; j < chain_waveforms.length; j++) {
+              scheduleNote(note_frqs[chain_frqs[i].value], next_note_time, chain_waveforms[j].value)
             }
           }
         }
-      })
-
+      }
 
 
 

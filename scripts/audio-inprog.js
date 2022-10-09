@@ -43,7 +43,8 @@ const startAudio = () => {
   node.buffer = buffer;
   node.start(0);
 
-  scheduler()
+  // scheduler()
+  startSequencer()
 }
 
 const channelData = buffer.getChannelData(0)
@@ -114,6 +115,40 @@ const nextNote = () => {
 }
 
 let timerID
+
+const checkForChain = (seq_no) => {
+  // see if chain lies on note sequencer
+  if (nodes_grid[0][seq_no].obj.part_of !== null) {
+    let chain = nodes_grid[0][seq_no].obj.part_of
+
+    let chain_frqs = chain.nodes.filter(x => x.type === 'note')
+
+    let chain_waveforms = chain.nodes.filter(x => x.type === 'waveform')
+
+    console.log(chain_waveforms)
+    // if unattached to note nodes
+    if (chain_frqs.length === 0) {
+      scheduleNoise(next_note_time)
+    } else {
+      for (let i = 0; i < chain_frqs.length; i++) {
+        let note_i = nodes_grid[1].indexOf(chain_frqs[i])
+
+        if (chain_waveforms.length === 0) {
+          scheduleNote(note_frqs[chain_frqs[i].value], next_note_time, 'sine')
+        } else {
+          for (let j = 0; j < chain_waveforms.length; j++) {
+            scheduleNote(note_frqs[chain_frqs[i].value], next_note_time, chain_waveforms[j].value)
+          }
+        }
+      }
+    }
+  }
+}
+
+const startSequencer = () => {
+  checkForChain(0)
+}
+
 const scheduler = () => {
   while (next_note_time < audioContext.currentTime + scheduleAheadTime) {
     // if () {}
@@ -121,40 +156,6 @@ const scheduler = () => {
     // console.log(nodes_grid[0][next_note])
 
 
-    // see if chain lies on note sequencer
-    if (nodes_grid[0][next_note].obj.part_of.length > 0) {
-
-      nodes_grid[0][next_note].obj.part_of.forEach(chain => {
-        // console.log(chain)
-        // let chain = nodes_grid[0][next_note].obj.part_of
-  // console.log(chain)
-        let chain_frqs = chain.nodes.filter(x => x.type === 'note')
-
-        let chain_waveforms = chain.nodes.filter(x => x.type === 'waveform')
-
-        console.log(chain_waveforms)
-        // if unattached to note nodes
-        if (chain_frqs.length === 0) {
-          scheduleNoise(next_note_time)
-        } else {
-          for (let i = 0; i < chain_frqs.length; i++) {
-            let note_i = nodes_grid[1].indexOf(chain_frqs[i])
-
-            if (chain_waveforms.length === 0) {
-              scheduleNote(note_frqs[chain_frqs[i].value], next_note_time, 'sine')
-            } else {
-              for (let j = 0; j < chain_waveforms.length; j++) {
-                scheduleNote(note_frqs[chain_frqs[i].value], next_note_time, chain_waveforms[j].value)
-              }
-            }
-          }
-        }
-      })
-
-
-
-
-    }
 
     scheduleVisual(current_note, audioContext.currentTime + scheduleAheadTime - next_note_time)
     nextNote()
