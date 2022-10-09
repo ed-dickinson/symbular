@@ -24,10 +24,17 @@
 
   </div>
   <div id="tooltip">
-    INFO
+    &nbsp;
+  </div>
+  <div id="chains" class="readout debug">
+    current chains: <span class="display"></span>
+  </div>
+  <div id="time-debug" class="readout debug">
+    ctx time: <span class="display"></span>
   </div>
   <div id="readout">
-    readout:
+    readout: <span id="debug"></span>
+
     <div>
       <div>
         master: <span class="master">I</span>
@@ -44,14 +51,20 @@
 <button id="play-button">Play/Pause</button>
 <!-- <script src="music.js"></script> -->
 
+<input type="range" min="0" max="200" step="1" value="100" class="slider" id="slider-tempo"> tempo: <span id="readout-tempo">100</span><br />
 vol: <input type="range" min="0" max="2" step="0.01" value="1" class="slider" id="slider-vol">
 filt: <input type="range" min="50" max="500" value="50" class="slider" id="slider-filt1">
 <br />
-<input type="range" min="1" max="100" value="50" class="slider" id="slider1"><br />
-<input type="range" min="1" max="100" value="50" class="slider" id="slider2"><br />
-<input type="range" min="1" max="100" value="50" class="slider" id="slider3"><br />
-<input type="range" min="1" max="100" value="50" class="slider" id="slider4">
+<br />
+
   </div>
+
+  <div id="instructions-panel">
+    Handy instructions:
+    - to add a new connection to an already connected symbol, click on a connected one, then click on the one you want to add. to make an seperate connection, first click on the unconnected symbol, then on the already connected one.
+  </div>
+
+
 </main>
 
 <!-- <script src="https://unpkg.com/tone"></script> -->
@@ -60,15 +73,23 @@ filt: <input type="range" min="50" max="500" value="50" class="slider" id="slide
 <script src="wiring.js"></script>
 
 <script>
-let tempo = 120;
+let tempo = 100;
 let beat_length = 500;
 let bar_length = 60 / tempo * 1000 * 4;
+document.querySelector('#slider-tempo').addEventListener('input', () => {
+  tempo = document.querySelector('#slider-tempo').value
+  document.querySelector('#readout-tempo').textContent = tempo
+})
+
+const debug = (string) => {
+  document.querySelector('#debug').textContent = string
+}
 </script>
 
 <!-- <script src='scripts/tone.js'></script> -->
-<!-- <script src='scripts/web-audio.js'></script> -->
-<script src='scripts/my-web-audio.js'></script>
 <script src='scripts/grid.js'></script>
+<script src='scripts/timing.js'></script>
+<script src='scripts/audio.js'></script>
 
 <script>
 

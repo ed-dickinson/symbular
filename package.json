@@ -1,0 +1,23 @@
+{
+  "name": "1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "javascript.js",
+  "scripts": {
+    
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ed-dickinson/symbular.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ed-dickinson/symbular/issues"
+  },
+  "homepage": "https://github.com/ed-dickinson/symbular#readme",
+  "devDependencies": {
+    "jest": "^28.0.3"
+  }
+}

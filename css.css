@@ -2,12 +2,16 @@
 @font-face {font-family: pixelmix; src: url(assets/pixelmix.ttf);}
 @font-face {font-family: dogica; src: url(assets/dogica.otf);}
 
-h1 {font-family: daydream;}
+h1 {font-family: daydream; font-size: 1.58em;}
 main {
   font-family: monospace;
 }
-#the-grid, #readout {
+#the-grid, #readout, #tooltip {
   font-family: dogica;
+}
+.readout, .debug, #instructions-panel {
+  font-family: dogica;
+  font-size: 0.8em;
 }
 #the-grid {
   font-size: 16px;
@@ -84,7 +88,11 @@ main {
 } */
 
 #tooltip {
-  font-size: 16px;
+  font-size: 0.8em;
+  margin-top: 1em;
+  min-height: 3.4em;
+  max-width: 40em;
+  padding-bottom: 1em;
 }
 
 .spin_anim {animation: spin 2s 0s linear;}
