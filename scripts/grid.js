@@ -59,7 +59,7 @@ for (let i = 0; i < 4; i++) {
 for (let i = 0; i < 4; i++) {
   let node = nodes_grid[2][i+4]
   node.symbol = ['<', '=', '>', '^'][i]
-  node.value = ['open', 'closed'][i]
+  node.value = i
   node.type = 'envelope'
   node.description = `This is an envelope symbol, it will change the envelope to a ${['sustained', 'decaying', 'ascending', 'peaking'][i]} one.`
 }
@@ -74,7 +74,7 @@ for (let i = 0; i < 2; i++) {
 for (let i = 0; i < 6; i++) {
   let node = nodes_grid[3][i]
   node.symbol = '¼½¾234'.substr(i, 1)
-  node.value = i
+  node.value = [0.25, 0.5, 0.75, 2, 3, 4][i]
   node.type = 'multiplier'
   node.description = `This is a modification multiplier: it will modify the effect of something by ${node.symbol}. (Hint: use on a sequencer node.)`
 }

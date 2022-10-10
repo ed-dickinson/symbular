@@ -67,29 +67,56 @@ masterGain.connect(audioContext.destination)
 const lookahead = 25.0; // how frequently to call scheduling function (in milliseconds)
 const scheduleAheadTime = 0.1; // how far ahead to schedule audio (sec)
 
-let current_note = 0
+let current_note = -1 // setting this to -1 instead of 0 means it will check the first sequencer node when starting up
 let next_note_time = 0.0 // when next note due
 
 // so what yu wanna o is have the scheduler checking every 25/50/100 msecs/pixels if anythng new has been drawn in front of it, - so check all the drawn shapes for an x reading, afor any in that block of time, schedule them using the one vairbale input for osc.start()
 
 let schedule_note = 0
 
-const scheduleNote = (frq, time, wave) => {
+
+// maybe reaarange these inputs into an object
+const scheduleNote = (frq, time, wave, env, multiplier) => {
   const osc = audioContext.createOscillator()
   osc.frequency.value = frq
   osc.type = wave
-  osc.connect(filter)
+
+  const envGain = audioContext.createGain()
+
+  let note_length = (600 / 8 / tempo) * multiplier
+
+
+  if (env === 0) {
+    envGain.gain.setValueAtTime(0, time)
+    envGain.gain.linearRampToValueAtTime(1, time + note_length)
+  } else if (env === 1) {
+    envGain.gain.setValueAtTime(1, time)
+    envGain.gain.linearRampToValueAtTime(1, time + note_length)
+  } else if (env === 2) {
+    envGain.gain.setValueAtTime(1, time)
+    envGain.gain.linearRampToValueAtTime(0, time + note_length)
+  } else {
+    envGain.gain.setValueAtTime(0, time)
+    envGain.gain.linearRampToValueAtTime(1, time + (note_length / 2))
+    envGain.gain.linearRampToValueAtTime(0, time + note_length)
+  }
+  envGain.connect(filter)
+
+  // osc.connect(filter)
+  osc.connect(envGain)
   osc.start(time)
-  osc.stop(time + (600 / 8 / tempo))
+  osc.stop(time + note_length)
   console.log('note frq', frq, 'scheduled', wave)
 }
-const scheduleNoise = (time) => {
+const scheduleNoise = (time, multiplier) => {
+  let note_length = (600 / 8 / tempo) * multiplier
+
   const noise = new AudioBufferSourceNode(audioContext, {
     buffer: noiseBuffer
   })
   noise.connect(filter)
   noise.start(time)
-  noise.stop(time + (600 / 8 / tempo))
+  noise.stop(time + note_length)
 }
 
 const scheduleVisual = (note, time) => {
@@ -110,12 +137,13 @@ const nextNote = () => {
 
   // Advance the beat number, wrap to zero when reaching 4
   current_note = (current_note+1) % 8;
-  console.log(current_note)
 }
 
 let timerID
 const scheduler = () => {
   while (next_note_time < audioContext.currentTime + scheduleAheadTime) {
+
+    // console.log(next_note)
     // if () {}
     let next_note = (current_note + 1) % 8
     // console.log(nodes_grid[0][next_note])
@@ -125,33 +153,59 @@ const scheduler = () => {
     if (nodes_grid[0][next_note].obj.part_of.length > 0) {
 
       nodes_grid[0][next_note].obj.part_of.forEach(chain => {
-        // console.log(chain)
+
         // let chain = nodes_grid[0][next_note].obj.part_of
-  // console.log(chain)
         let chain_frqs = chain.nodes.filter(x => x.type === 'note')
 
         let chain_waveforms = chain.nodes.filter(x => x.type === 'waveform')
+        let chain_envs = chain.nodes.filter(x => x.type === 'envelope')
+        if (chain_envs.length === 0) {
+          chain_envs = [{value : 1}]
+        } // set default envelope if no env node is connected
+
+        let chain_multiplier = chain.nodes.filter(x => x.type === 'multiplier')
+        if (chain_multiplier.length === 0) {
+          chain_multiplier = 1
+        } else {
+          let x = 1
+          chain_multiplier.forEach(y => {x *= y.value})
+          chain_multiplier = x
+        }
+
+        console.log('multi', chain_multiplier)
+
 
         console.log(chain_waveforms)
         // if unattached to note nodes
         if (chain_frqs.length === 0) {
-          scheduleNoise(next_note_time)
+          scheduleNoise(next_note_time, chain_multiplier)
         } else {
           for (let i = 0; i < chain_frqs.length; i++) {
             let note_i = nodes_grid[1].indexOf(chain_frqs[i])
 
             if (chain_waveforms.length === 0) {
-              scheduleNote(note_frqs[chain_frqs[i].value], next_note_time, 'sine')
+              scheduleNote(
+                note_frqs[chain_frqs[i].value],
+                next_note_time,
+                'sine',
+                chain_envs[i % chain_envs.length].value,
+                chain_multiplier
+              )
+              // chain envs length thing gives a random but predictable one if there are multiples
             } else {
               for (let j = 0; j < chain_waveforms.length; j++) {
-                scheduleNote(note_frqs[chain_frqs[i].value], next_note_time, chain_waveforms[j].value)
+                scheduleNote(
+                  note_frqs[chain_frqs[i].value],
+                  next_note_time,
+                  chain_waveforms[j].value,
+                  chain_envs[j % chain_envs.length].value,
+                  chain_multiplier
+                )
               }
             }
           }
         }
       })
-
-
 
 
     }
