@@ -76,37 +76,37 @@ let schedule_note = 0
 
 
 // maybe reaarange these inputs into an object
-const scheduleNote = (frq, time, wave, env, multiplier) => {
+const scheduleNote = (parameters) => {
   const osc = audioContext.createOscillator()
-  osc.frequency.value = frq
-  osc.type = wave
+  osc.frequency.value = parameters.frq
+  osc.type = parameters.waveform
 
   const envGain = audioContext.createGain()
 
-  let note_length = (600 / 8 / tempo) * multiplier
+  let note_length = (600 / 8 / tempo) * parameters.multiplier
 
+  envGain.gain.setValueAtTime(0, parameters.time)
 
-  if (env === 0) {
-    envGain.gain.setValueAtTime(0, time)
-    envGain.gain.linearRampToValueAtTime(1, time + note_length)
-  } else if (env === 1) {
-    envGain.gain.setValueAtTime(1, time)
-    envGain.gain.linearRampToValueAtTime(1, time + note_length)
-  } else if (env === 2) {
-    envGain.gain.setValueAtTime(1, time)
-    envGain.gain.linearRampToValueAtTime(0, time + note_length)
+  if (parameters.env === 0) {
+    envGain.gain.linearRampToValueAtTime(1, parameters.time + note_length - 0.01)
+  } else if (parameters.env === 1) {
+    envGain.gain.linearRampToValueAtTime(1, parameters.time + 0.01)
+    envGain.gain.linearRampToValueAtTime(1, parameters.time + note_length - 0.01)
+  } else if (parameters.env === 2) {
+    envGain.gain.linearRampToValueAtTime(1, parameters.time + 0.01)
   } else {
-    envGain.gain.setValueAtTime(0, time)
-    envGain.gain.linearRampToValueAtTime(1, time + (note_length / 2))
-    envGain.gain.linearRampToValueAtTime(0, time + note_length)
+    envGain.gain.linearRampToValueAtTime(1, parameters.time + (note_length / 2))
   }
+
+  envGain.gain.linearRampToValueAtTime(0, parameters.time + note_length)
+  console.log('env',parameters.env)
   envGain.connect(filter)
 
   // osc.connect(filter)
   osc.connect(envGain)
-  osc.start(time)
-  osc.stop(time + note_length)
-  console.log('note frq', frq, 'scheduled', wave)
+  osc.start(parameters.time)
+  osc.stop(parameters.time + note_length)
+  console.log('note frq', parameters.frq, 'scheduled', parameters.waveform)
 }
 const scheduleNoise = (time, multiplier) => {
   let note_length = (600 / 8 / tempo) * multiplier
@@ -130,10 +130,10 @@ const scheduleVisual = (note, time) => {
 }
 
 
-const nextNote = () => {
+const nextNote = (multiplier) => {
   const secs_per_beat = 60.0 / tempo
 
-  next_note_time += secs_per_beat; // Add beat length to last beat time
+  next_note_time += secs_per_beat * multiplier; // Add beat length to last beat time (multiplier mods length)
 
   // Advance the beat number, wrap to zero when reaching 4
   current_note = (current_note+1) % 8;
@@ -148,6 +148,7 @@ const scheduler = () => {
     let next_note = (current_note + 1) % 8
     // console.log(nodes_grid[0][next_note])
 
+    let node_multiplier = 1
 
     // see if chain lies on note sequencer
     if (nodes_grid[0][next_note].obj.part_of.length > 0) {
@@ -163,19 +164,23 @@ const scheduler = () => {
           chain_envs = [{value : 1}]
         } // set default envelope if no env node is connected
 
-        let chain_multiplier = chain.nodes.filter(x => x.type === 'multiplier')
-        if (chain_multiplier.length === 0) {
-          chain_multiplier = 1
-        } else {
-          let x = 1
-          chain_multiplier.forEach(y => {x *= y.value})
-          chain_multiplier = x
+        let chain_multipliers = chain.nodes.filter(x => x.type === 'multiplier')
+        let chain_multiplier = chain_multipliers.reduce((a,b)=> {return a * b.value}, 1)
+        let chain_seqs = chain.nodes.filter(x => x.type === 'sequence')
+
+        // check if chain consists of only multiplier nodes and sequencer
+        if (chain.nodes.length === chain_multipliers.length + chain_seqs.length) {
+          node_multiplier = chain_multiplier
         }
 
-        console.log('multi', chain_multiplier)
+        let parameters = {
+          time : next_note_time ,
+          frq : null ,
+          waveform : null ,
+          env : null ,
+          multiplier : chain_multiplier
+        }
 
-
-        console.log(chain_waveforms)
         // if unattached to note nodes
         if (chain_frqs.length === 0) {
           scheduleNoise(next_note_time, chain_multiplier)
@@ -183,24 +188,21 @@ const scheduler = () => {
           for (let i = 0; i < chain_frqs.length; i++) {
             let note_i = nodes_grid[1].indexOf(chain_frqs[i])
 
+            parameters.frq = note_frqs[chain_frqs[i].value]
+
             if (chain_waveforms.length === 0) {
-              scheduleNote(
-                note_frqs[chain_frqs[i].value],
-                next_note_time,
-                'sine',
-                chain_envs[i % chain_envs.length].value,
-                chain_multiplier
-              )
+
+              parameters.waveform = 'sine'
+              parameters.env = chain_envs[i % chain_envs.length].values
+
+              scheduleNote(parameters)
               // chain envs length thing gives a random but predictable one if there are multiples
             } else {
               for (let j = 0; j < chain_waveforms.length; j++) {
-                scheduleNote(
-                  note_frqs[chain_frqs[i].value],
-                  next_note_time,
-                  chain_waveforms[j].value,
-                  chain_envs[j % chain_envs.length].value,
-                  chain_multiplier
-                )
+                parameters.env = chain_envs[j % chain_envs.length].value
+                parameters.waveform = chain_waveforms[j].value
+
+                scheduleNote(parameters)
               }
             }
           }
@@ -211,7 +213,8 @@ const scheduler = () => {
     }
 
     scheduleVisual(current_note, audioContext.currentTime + scheduleAheadTime - next_note_time)
-    nextNote()
+
+    nextNote(node_multiplier)
 
   }
   timerID = setTimeout(scheduler, lookahead)

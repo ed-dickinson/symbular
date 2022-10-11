@@ -1,3 +1,6 @@
+// import { createDomWire_EXT as createDomWire } from './modules/wiring.js';
+
+
 // ideas - numeral modifier -
 
 // make higher and lower
@@ -112,7 +115,7 @@ console.log(nodes_grid)
 const wiringChain = () => {
   let hue = 0;
   return () => {
-    hue += 20;
+    hue += 30;
     if (hue === 360) {
       hue = 0;
     }
@@ -123,7 +126,7 @@ const wiringChain = () => {
 let running_hue = 0;
 
 const moveHue = () => {
-  running_hue += 20;
+  running_hue += 30;
   if (running_hue === 360) {
     running_hue = 0;
   }
@@ -205,7 +208,7 @@ const select = (target) => {
   }
   target.dom.style.borderColor = `hsl(${target.hue},75%,50%)`;
   // target.dom.style.backgroundColor = `hsl(${target.hue},75%,50%)`;
-  // target.hue += 20;
+  // target.hue += 30;
   target.dom.classList.add('selected');
 }
 
@@ -245,12 +248,12 @@ const Node = (dom, description, type, value) => {
   const click = () => {
     dom.style.color = `hsl(${hue},75%,50%)`;
     dom.classList.add('selected');
-    hue += 20;
+    hue += 30;
   }
   const start_connection = () => {
     dom.style.color = `hsl(${hue},75%,50%)`;
     dom.classList.add('selected');
-    hue += 20;
+    hue += 30;
   }
 
   return {dom, symbol, wireTo,
@@ -283,11 +286,11 @@ const Chain = (node_array, hue_in) => {
 }
 
 // DOM GRID MAKER !!
-for (y = 0; y < 8; y++) {
+for (let y = 0; y < 8; y++) {
   let row = document.createElement('div');
   row.classList.add('row');
   grid.appendChild(row);
-  for (x = 0; x < 8; x++) {
+  for (let x = 0; x < 8; x++) {
     let node = document.createElement('span');
     node.classList.add('node');
 
@@ -301,7 +304,8 @@ for (y = 0; y < 8; y++) {
 
       // for testing - fills with random node types
     } else {
-      node.innerHTML = digit_string.substr(Math.floor(Math.random()*digit_string.length),1);
+      // node.innerHTML = digit_string.substr(Math.floor(Math.random()*digit_string.length),1); // RANDOM ONE
+      node.innerHTML = '0'
 
       node_blueprint = {type: 'undefined'}
     }

@@ -58,7 +58,8 @@ const createDomWire_EXT = (from, to, colour) => {
     wire_dom.style.height = yy + 'px';
     x += direction === 'left' ? -xx - 4 : xx;
     y += direction === 'up' ? -yy - 4 : yy;
-    grid.appendChild(wire_dom)
+    // grid.appendChild(wire_dom)
+    from.parentNode.appendChild(wire_dom)
   }
 
   let x, y;
@@ -116,3 +117,5 @@ const createDomWire_EXT = (from, to, colour) => {
   }
 
 }
+
+// export { createDomWire_EXT }
