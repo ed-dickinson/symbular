@@ -23,21 +23,28 @@ const buffer = audioContext.createBuffer(
 let noiseDuration = 10
 const bufferSize = audioContext.sampleRate * noiseDuration;
 // Create an empty buffer
-const noiseBuffer = new AudioBuffer({
-  length: bufferSize,
-  sampleRate: audioContext.sampleRate
-});
+// const noiseBuffer = new AudioBuffer({
+//   length: bufferSize,
+//   sampleRate: audioContext.sampleRate
+// });
+const noiseBuffer = audioContext.createBuffer(
+  1,
+  bufferSize,
+  audioContext.sampleRate
+) // works on safari
 const data = noiseBuffer.getChannelData(0);
 for (let i = 0; i < bufferSize; i++) {
   data[i] = Math.random() * 2 - 1;
 }
 
 
-let unplayed = true
+// let unplayed = true
+
+Window.unplayed = true
 
 const startAudio = () => {
 
-  unplayed = false; //remove
+  Window.unplayed = false; //remove
 
   const node = audioContext.createBufferSource();
   node.buffer = buffer;
@@ -74,12 +81,17 @@ let next_note_time = 0.0 // when next note due
 
 let schedule_note = 0
 
-
-// maybe reaarange these inputs into an object
 const scheduleNote = (parameters) => {
-  const osc = audioContext.createOscillator()
-  osc.frequency.value = parameters.frq
-  osc.type = parameters.waveform
+  let osc = undefined
+  if (parameters.waveform === 'noise') {
+    osc = new AudioBufferSourceNode(audioContext, {
+      buffer: noiseBuffer
+    })
+  } else {
+    osc = audioContext.createOscillator()
+    osc.frequency.value = parameters.frq
+    osc.type = parameters.waveform
+  }
 
   const envGain = audioContext.createGain()
 
@@ -108,16 +120,11 @@ const scheduleNote = (parameters) => {
   osc.stop(parameters.time + note_length)
   console.log('note frq', parameters.frq, 'scheduled', parameters.waveform)
 }
-const scheduleNoise = (time, multiplier) => {
-  let note_length = (600 / 8 / tempo) * multiplier
 
-  const noise = new AudioBufferSourceNode(audioContext, {
-    buffer: noiseBuffer
-  })
-  noise.connect(filter)
-  noise.start(time)
-  noise.stop(time + note_length)
+const scheduleTrigger = (paramters) => {
+  scheduleNote(parameters)
 }
+
 
 const scheduleVisual = (note, time) => {
   note = (note + 1) % 8
@@ -168,22 +175,34 @@ const scheduler = () => {
         let chain_multiplier = chain_multipliers.reduce((a,b)=> {return a * b.value}, 1)
         let chain_seqs = chain.nodes.filter(x => x.type === 'sequence')
 
-        // check if chain consists of only multiplier nodes and sequencer
-        if (chain.nodes.length === chain_multipliers.length + chain_seqs.length) {
-          node_multiplier = chain_multiplier
-        }
+        let chain_arpeggiators = chain.nodes.filter(x => x.type === 'arpeggiator')
+
+        console.log(chain_arpeggiators)
+
+        // check if chain consists of only multiplier nodes and sequencer to make node shorter
+        // if (chain.nodes.length === chain_multipliers.length + chain_seqs.length) {
+          node_multiplier *= chain_multiplier
+        // }
 
         let parameters = {
           time : next_note_time ,
           frq : null ,
           waveform : null ,
           env : null ,
-          multiplier : chain_multiplier
+          multiplier : chain_multiplier ,
+          arpeggiator : null
         }
 
+        if (chain_arpeggiators.length > 0) {
+          parameters.arpeggiator = chain_arpeggiators.length === 2 ? both : chain_arpeggiators[0].value
+        }
+
+        console.log(parameters.arpeggiator)
         // if unattached to note nodes
         if (chain_frqs.length === 0) {
-          scheduleNoise(next_note_time, chain_multiplier)
+          // scheduleNoise(next_note_time, chain_multiplier)
+          parameters.waveform = 'noise'
+          scheduleNote(parameters)
         } else {
           for (let i = 0; i < chain_frqs.length; i++) {
             let note_i = nodes_grid[1].indexOf(chain_frqs[i])

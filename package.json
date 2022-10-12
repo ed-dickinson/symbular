@@ -4,7 +4,6 @@
   "description": "",
   "main": "javascript.js",
   "scripts": {
-    
     "test": "jest"
   },
   "repository": {

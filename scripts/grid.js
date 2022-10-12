@@ -201,7 +201,8 @@ const select = (target) => {
     // ^^^ finish connect to other node ^^^
 
     // this is from audio.js or timing.js
-    if (unplayed) { startAudio() }
+    if (Window.unplayed) { startAudio() }
+    // startAudio()
 
 
     connecting = null;
@@ -222,6 +223,8 @@ const clearTooltip = () => {
 const hover = (target) => {
   // console.log('hover')
   tooltip_dom.innerHTML = target.description
+
+  console.log('hover:', target)
   // if (target.part_of !== null) {
   //   tooltip_dom.innerHTML += `, chain: ${target.part_of.getName()}`
   // }

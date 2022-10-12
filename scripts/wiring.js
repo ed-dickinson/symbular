@@ -1,3 +1,5 @@
+// wiring ONLY DOES WIRE - not highlight of boxes
+
 const createDomWire_EXT = (from, to, colour) => {
 
   let from_col = Array.from(from.parentNode.children).indexOf(from),
