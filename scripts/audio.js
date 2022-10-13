@@ -177,10 +177,13 @@ const scheduler = () => {
 
         let chain_arpeggiators = chain.nodes.filter(x => x.type === 'arpeggiator')
 
-        console.log(chain_arpeggiators)
+        let chain_range = chain.nodes.filter(x => x.type === 'range')
+
+        console.log(chain_range)
 
         // check if chain consists of only multiplier nodes and sequencer to make node shorter
         // if (chain.nodes.length === chain_multipliers.length + chain_seqs.length) {
+        // make node length correspond to chain mult length
           node_multiplier *= chain_multiplier
         // }
 
@@ -190,14 +193,17 @@ const scheduler = () => {
           waveform : null ,
           env : null ,
           multiplier : chain_multiplier ,
-          arpeggiator : null
+          arpeggiator : null ,
+          range : chain_range.length === 1 ? chain_range[0].value : 0 ,
         }
+
+        // console.log('range' , parameters.range)
 
         if (chain_arpeggiators.length > 0) {
           parameters.arpeggiator = chain_arpeggiators.length === 2 ? both : chain_arpeggiators[0].value
         }
 
-        console.log(parameters.arpeggiator)
+        // console.log(parameters.arpeggiator)
         // if unattached to note nodes
         if (chain_frqs.length === 0) {
           // scheduleNoise(next_note_time, chain_multiplier)
@@ -207,7 +213,16 @@ const scheduler = () => {
           for (let i = 0; i < chain_frqs.length; i++) {
             let note_i = nodes_grid[1].indexOf(chain_frqs[i])
 
+console.log('range', parameters.range)
             parameters.frq = note_frqs[chain_frqs[i].value]
+
+            if (parameters.range !== 0) {
+              parameters.frq *= Math.pow(2, (12 * parameters.multiplier * parameters.range)/12)
+            }
+            // if range mod
+
+            console.log('frq', parameters.frq)
+
 
             if (chain_waveforms.length === 0) {
 

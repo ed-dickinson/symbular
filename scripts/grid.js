@@ -69,7 +69,7 @@ for (let i = 0; i < 4; i++) {
 for (let i = 0; i < 2; i++) {
   let node = nodes_grid[3][i+6]
   node.symbol = ['-', '+'][i]
-  node.value = ['down', 'up'][i]
+  node.value = [-1, 1][i]
   node.type = 'range'
   node.description = `This is a octave range symbol, it will change the octave ${['down', 'up'][i]}, among other things.`
 }
